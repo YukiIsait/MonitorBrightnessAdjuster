@@ -1,0 +1,2 @@
+#define LIBDISPLAYDATACHANNEL_API __declspec(dllexport)
+#define LIBDISPLAYDATACHANNEL_API __declspec(dllimport)

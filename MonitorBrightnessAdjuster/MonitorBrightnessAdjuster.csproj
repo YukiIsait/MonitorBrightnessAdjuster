@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>10</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Management" />
+  </ItemGroup>
+
+  <Target Name="CopyNativeLib" BeforeTargets="AfterBuild">
+    <Copy Condition="'$(Configuration)' == 'Debug'" SourceFiles="$(SolutionDir)x64\Debug\LibDisplayDataChannel.dll" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="True" />
+    <Copy Condition="'$(Configuration)' == 'Release'" SourceFiles="$(SolutionDir)x64\Release\LibDisplayDataChannel.dll" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="True" />
+  </Target>
+</Project>
