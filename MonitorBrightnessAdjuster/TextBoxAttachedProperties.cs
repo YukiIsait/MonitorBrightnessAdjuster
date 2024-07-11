@@ -17,16 +17,27 @@ namespace MonitorBrightnessAdjuster {
                 (s, e) => {
                     if (s is TextBox textBox) {
                         textBox.SetValue(InputMethod.IsInputMethodEnabledProperty, !(bool) e.NewValue);
+                        textBox.AllowDrop = !(bool) e.NewValue;
+                        textBox.CommandBindings.Clear();
                         textBox.PreviewTextInput -= TextInput;
                         if ((bool) e.NewValue) {
+                            textBox.CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, null, CommandCanExecute));
                             textBox.PreviewTextInput += TextInput;
                         }
                     }
                 }));
 
+        private static void CommandCanExecute(object sender, CanExecuteRoutedEventArgs e) {
+            e.CanExecute = false;
+            e.Handled = true;
+        }
+
         private static void TextInput(object sender, TextCompositionEventArgs e) {
             if (sender is TextBox textBox) {
-                e.Handled = !(int.TryParse(textBox.Text + e.Text, out int number) && number >= 0 && number <= 100);
+                e.Handled = !(int.TryParse(textBox.Text.Substring(0, textBox.SelectionStart) +
+                                           e.Text +
+                                           textBox.Text.Substring(textBox.SelectionStart + textBox.SelectionLength),
+                                           out int number) && number >= 0 && number <= 100);
             }
         }
     }
