@@ -59,7 +59,7 @@ namespace MonitorBrightnessAdjuster.Adjusters {
             if (monitorIndex >= monitorBrightnessInstances.Count() || monitorIndex < 0) {
                 throw new ArgumentOutOfRangeException(nameof(monitorIndex));
             }
-            if (brightness < 0) {
+            if (brightness < 0 || brightness > 100) {
                 throw new ArgumentOutOfRangeException(nameof(brightness));
             }
             KeyValuePair<ManagementObject, ManagementObject> currentInstance = monitorBrightnessInstances
