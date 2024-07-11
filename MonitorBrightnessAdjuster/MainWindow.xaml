@@ -12,7 +12,7 @@
         WindowStartupLocation="CenterScreen"
         Title="Monitor Brightness Adjuster">
     <DockPanel>
-        <Menu DockPanel.Dock="Top" FontSize="15" FontFamily="Consolas">
+        <Menu DockPanel.Dock="Top" FontSize="15">
             <MenuItem Header="Channel">
                 <MenuItem Header="WMI" IsCheckable="True" IsChecked="{Binding EnabledWmiChannel}" />
                 <MenuItem Header="DDC" IsCheckable="True" IsChecked="{Binding EnabledDdcChannel}"/>
@@ -21,10 +21,10 @@
                 <MenuItem Header="Refresh" Command="{Binding RefreshCommand}"/>
             </MenuItem>
         </Menu>
-        <StatusBar DockPanel.Dock="Bottom" FontSize="15" FontFamily="Consolas">
-            <TextBlock Text="{Binding MonitorBrightnessModels.Count, StringFormat={}{0} monitor(s)}" Margin="5,0,0,0" />
+        <StatusBar DockPanel.Dock="Bottom" FontSize="15">
+            <TextBlock Text="{Binding MonitorBrightnessModels.Count, StringFormat={}{0} monitor(s)}" Margin="4,0,0,0" />
         </StatusBar>
-        <ListBox BorderThickness="0" Margin="5" FontSize="15" FontFamily="Consolas" ItemsSource="{Binding MonitorBrightnessModels}">
+        <ListBox BorderThickness="0" Margin="5" FontSize="15" ItemsSource="{Binding MonitorBrightnessModels}">
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -40,7 +40,7 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Margin="0,0,5,0">
+                        <TextBlock Grid.Column="0" Width="50" Margin="0,0,5,0">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}-{1}">
                                     <Binding Path="Channel" />
