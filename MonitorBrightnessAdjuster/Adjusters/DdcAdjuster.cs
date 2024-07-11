@@ -37,7 +37,7 @@ namespace MonitorBrightnessAdjuster.Adjusters {
             if (monitorIndex < 0) {
                 throw new ArgumentOutOfRangeException(nameof(monitorIndex));
             }
-            if (brightness < 0) {
+            if (brightness < 0 || brightness > 100) {
                 throw new ArgumentOutOfRangeException(nameof(brightness));
             }
             if (!GetPhysicalMonitorBrightness((uint) monitorIndex, out _, out uint minimumBrightness, out uint maximumBrightness)) {
