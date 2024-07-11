@@ -18,7 +18,7 @@ namespace MonitorBrightnessAdjuster {
         [ObservableProperty]
         private int brightness;
 
-        partial void OnBrightnessChanged(int brightness) {
+        partial void OnBrightnessChanging(int brightness) {
             switch (Channel) {
                 case MonitorBrightnessChannel.WMI:
                     AdjusterSingletons.WmiAdjusterInstance.SetBrightnessPercentage(Index, brightness);
