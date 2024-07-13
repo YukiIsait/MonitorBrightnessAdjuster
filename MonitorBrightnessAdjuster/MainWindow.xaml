@@ -11,6 +11,11 @@
         SnapsToDevicePixels="True"
         WindowStartupLocation="CenterScreen"
         Title="Monitor Brightness Adjuster">
+
+    <Window.InputBindings>
+        <KeyBinding Command="{Binding RefreshCommand}" Key="F5"></KeyBinding>
+    </Window.InputBindings>
+
     <DockPanel>
         <Menu DockPanel.Dock="Top" FontSize="15">
             <MenuItem Header="Channel">
@@ -18,7 +23,7 @@
                 <MenuItem Header="DDC" IsCheckable="True" IsChecked="{Binding EnabledDdcChannel}"/>
             </MenuItem>
             <MenuItem Header="View">
-                <MenuItem Header="Refresh" Command="{Binding RefreshCommand}"/>
+                <MenuItem Header="Refresh" Command="{Binding RefreshCommand}" InputGestureText="F5" />
             </MenuItem>
         </Menu>
         <StatusBar DockPanel.Dock="Bottom" FontSize="15">
@@ -48,7 +53,7 @@
                                 </MultiBinding>
                             </TextBlock.Text>
                         </TextBlock>
-                        <Slider Grid.Column="1" VerticalAlignment="Center" Margin="0,0,5,0" Maximum="100" Value="{Binding Brightness}" />
+                        <Slider Grid.Column="1" VerticalAlignment="Center" Margin="0,0,5,0" Maximum="100" Value="{Binding Brightness}" MouseWheel="Slider_MouseWheel" />
                         <TextBox Grid.Column="2" Width="50" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,5,0" local:TextBoxAttachedProperties.IsPercentage="True" Text="{Binding Brightness, UpdateSourceTrigger=PropertyChanged}" />
                         <TextBlock Grid.Column="3" Text="%" />
                     </Grid>
