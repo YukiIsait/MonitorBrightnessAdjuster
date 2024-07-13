@@ -54,15 +54,7 @@
                             </TextBlock.Text>
                         </TextBlock>
                         <Slider Grid.Column="1" VerticalAlignment="Center" Margin="0,0,5,0" Maximum="100" Value="{Binding Brightness}" MouseWheel="Slider_MouseWheel" />
-                        <TextBox Grid.Column="2" Width="50" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,5,0">
-                            <TextBox.Text>
-                                <Binding Path="Brightness" UpdateSourceTrigger="PropertyChanged">
-                                    <Binding.ValidationRules>
-                                        <local:PercentageValidation />
-                                    </Binding.ValidationRules>
-                                </Binding>
-                            </TextBox.Text>
-                        </TextBox>
+                        <TextBox Grid.Column="2" Width="50" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,5,0" Text="{Binding Brightness, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
                         <TextBlock Grid.Column="3" Text="%" />
                     </Grid>
                 </DataTemplate>
