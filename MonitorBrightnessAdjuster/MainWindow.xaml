@@ -13,7 +13,7 @@
         Title="Monitor Brightness Adjuster">
 
     <Window.InputBindings>
-        <KeyBinding Command="{Binding RefreshCommand}" Key="F5"></KeyBinding>
+        <KeyBinding Command="{Binding RefreshCommand}" Key="F5" />
     </Window.InputBindings>
 
     <DockPanel>
