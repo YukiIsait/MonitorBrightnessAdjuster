@@ -12,6 +12,9 @@
         WindowStartupLocation="CenterScreen"
         Title="Monitor Brightness Adjuster">
 
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Window.Resources>
     <Window.InputBindings>
         <KeyBinding Command="{Binding RefreshCommand}" Key="F5" />
     </Window.InputBindings>
@@ -29,36 +32,39 @@
         <StatusBar DockPanel.Dock="Bottom" FontSize="15">
             <TextBlock Text="{Binding MonitorBrightnessModels.Count, StringFormat={}{0} monitor(s)}" Margin="4,0,0,0" />
         </StatusBar>
-        <ListBox BorderThickness="0" Margin="5" FontSize="15" ItemsSource="{Binding MonitorBrightnessModels}">
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="ListBoxItem">
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                    <Setter Property="Focusable" Value="False" />
-                </Style>
-            </ListBox.ItemContainerStyle>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Width="50" Margin="0,0,5,0">
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0}-{1}">
-                                    <Binding Path="Channel" />
-                                    <Binding Path="Index" />
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
-                        <Slider Grid.Column="1" VerticalAlignment="Center" Margin="0,0,5,0" Maximum="100" Value="{Binding Brightness}" MouseWheel="Slider_MouseWheel" />
-                        <TextBox Grid.Column="2" Width="50" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,5,0" Text="{Binding Brightness, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
-                        <TextBlock Grid.Column="3" Text="%" />
-                    </Grid>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <Grid>
+            <ListBox BorderThickness="0" Margin="5" FontSize="15" ItemsSource="{Binding MonitorBrightnessModels}">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="Focusable" Value="False" />
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Width="50" Margin="0,0,5,0">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0}-{1}">
+                                        <Binding Path="Channel" />
+                                        <Binding Path="Index" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                            <Slider Grid.Column="1" VerticalAlignment="Center" Margin="0,0,5,0" Maximum="100" Value="{Binding Brightness}" MouseWheel="Slider_MouseWheel" />
+                            <TextBox Grid.Column="2" Width="50" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,5,0" Text="{Binding Brightness, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
+                            <TextBlock Grid.Column="3" Text="%" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="15" Text="No supported monitors found" Visibility="{Binding ShowNoSupportedMonitorsFound, Converter={StaticResource BooleanToVisibilityConverter}}" />
+        </Grid>
     </DockPanel>
 </Window>

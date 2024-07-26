@@ -13,6 +13,9 @@ namespace MonitorBrightnessAdjuster {
         [ObservableProperty]
         private bool enabledDdcChannel = true;
 
+        [ObservableProperty]
+        private bool showNoSupportedMonitorsFound = false;
+
         public ObservableCollection<MonitorBrightnessModel> MonitorBrightnessModels { get; set; }
 
         public MainWindowViewModel() {
@@ -45,6 +48,7 @@ namespace MonitorBrightnessAdjuster {
                     }
                 } catch { }
             }
+            ShowNoSupportedMonitorsFound = MonitorBrightnessModels.Count == 0;
         }
 
         partial void OnEnabledWmiChannelChanged(bool _) {
