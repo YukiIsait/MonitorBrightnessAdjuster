@@ -24,22 +24,26 @@ namespace MonitorBrightnessAdjuster {
         private void Refresh() {
             MonitorBrightnessModels.Clear();
             if (EnabledWmiChannel) {
-                for (int i = 0; i < AdjusterSingletons.WmiAdjusterInstance.GetNumberOfMonitors(); i++) {
-                    MonitorBrightnessModels.Add(new MonitorBrightnessModel() {
-                        Channel = MonitorBrightnessChannel.WMI,
-                        Index = i,
-                        Brightness = AdjusterSingletons.WmiAdjusterInstance.GetBrightnessPercentage(i)
-                    });
-                }
+                try {
+                    for (int i = 0; i < AdjusterSingletons.WmiAdjusterInstance.GetNumberOfMonitors(); i++) {
+                        MonitorBrightnessModels.Add(new MonitorBrightnessModel() {
+                            Channel = MonitorBrightnessChannel.WMI,
+                            Index = i,
+                            Brightness = AdjusterSingletons.WmiAdjusterInstance.GetBrightnessPercentage(i)
+                        });
+                    }
+                } catch { }
             }
             if (EnabledDdcChannel) {
-                for (int i = 0; i < AdjusterSingletons.DdcAdjusterInstance.GetNumberOfMonitors(); i++) {
-                    MonitorBrightnessModels.Add(new MonitorBrightnessModel() {
-                        Channel = MonitorBrightnessChannel.DDC,
-                        Index = i,
-                        Brightness = AdjusterSingletons.DdcAdjusterInstance.GetBrightnessPercentage(i)
-                    });
-                }
+                try {
+                    for (int i = 0; i < AdjusterSingletons.DdcAdjusterInstance.GetNumberOfMonitors(); i++) {
+                        MonitorBrightnessModels.Add(new MonitorBrightnessModel() {
+                            Channel = MonitorBrightnessChannel.DDC,
+                            Index = i,
+                            Brightness = AdjusterSingletons.DdcAdjusterInstance.GetBrightnessPercentage(i)
+                        });
+                    }
+                } catch { }
             }
         }
 
