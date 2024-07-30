@@ -1,5 +1,7 @@
 ﻿# Monitor Brightness Adjuster
 
+🌍 **[简体中文](README-CN.md) | [English](README.md)**
+
 Monitor Brightness Adjuster is a utility application designed to help users control the brightness of their monitors. Whether you’re working late at night or need to fine-tune your display settings, this tool provides a convenient way to adjust brightness levels.
 
 ## Features
