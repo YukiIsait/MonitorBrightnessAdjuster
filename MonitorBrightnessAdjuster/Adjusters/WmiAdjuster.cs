@@ -1,7 +1,7 @@
 ﻿using System.Management;
 
 namespace MonitorBrightnessAdjuster.Adjusters {
-    public class WmiAdjuster: IAdjuster {
+    public sealed class WmiAdjuster: IAdjuster, IDisposable {
         private readonly ManagementClass monitorBrightnessClass;
         private readonly ManagementClass monitorBrightnessMethodsClass;
 
@@ -12,6 +12,11 @@ namespace MonitorBrightnessAdjuster.Adjusters {
             monitorBrightnessMethodsClass = new("WmiMonitorBrightnessMethods") {
                 Scope = new(@"\\.\root\wmi")
             };
+        }
+
+        public void Dispose() {
+            monitorBrightnessClass.Dispose();
+            monitorBrightnessMethodsClass.Dispose();
         }
 
         private IEnumerable<KeyValuePair<ManagementObject, ManagementObject>> GetActiveMonitorBrightnessInstances() {
