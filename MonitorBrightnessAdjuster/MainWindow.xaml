@@ -28,6 +28,9 @@
             <MenuItem Header="View">
                 <MenuItem Header="Refresh" Command="{Binding RefreshCommand}" InputGestureText="F5" />
             </MenuItem>
+            <MenuItem Header="Help">
+                <MenuItem Header="About" Command="{Binding AboutCommand}" />
+            </MenuItem>
         </Menu>
         <StatusBar DockPanel.Dock="Bottom" FontSize="15">
             <TextBlock Text="{Binding MonitorBrightnessModels.Count, StringFormat={}{0} monitor(s)}" Margin="4,0,0,0" />

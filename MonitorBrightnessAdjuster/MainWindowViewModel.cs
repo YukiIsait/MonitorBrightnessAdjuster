@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using MonitorBrightnessAdjuster.Adjusters;
 
 using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace MonitorBrightnessAdjuster {
     public partial class MainWindowViewModel: ObservableObject {
@@ -49,6 +50,11 @@ namespace MonitorBrightnessAdjuster {
                 } catch { }
             }
             ShowNoSupportedMonitorsFound = MonitorBrightnessModels.Count == 0;
+        }
+
+        [RelayCommand]
+        private void About() {
+            MessageBox.Show(AboutUtil.GetAboutInformation(), "About", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         partial void OnEnabledWmiChannelChanged(bool _) {
