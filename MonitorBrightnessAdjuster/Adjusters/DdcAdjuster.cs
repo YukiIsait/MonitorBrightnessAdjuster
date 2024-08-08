@@ -2,31 +2,40 @@
 using System.Runtime.InteropServices;
 
 namespace MonitorBrightnessAdjuster.Adjusters {
-    public class DdcAdjuster: IAdjuster {
-        [DllImport("LibDisplayDataChannel.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern bool GetNumberOfPhysicalMonitors(out uint numberOfPhysicalMonitors);
+    public sealed class DdcAdjuster: IAdjuster, IDisposable {
+        private readonly UIntPtr handle;
 
-        [DllImport("LibDisplayDataChannel.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern bool GetPhysicalMonitorBrightness(uint monitorIndex,
-                                                               out uint currentBrightness,
-                                                               out uint minimumBrightness,
-                                                               out uint maximumBrightness);
+        public DdcAdjuster() {
+            handle = DdcInitialize();
+        }
 
-        [DllImport("LibDisplayDataChannel.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern bool SetPhysicalMonitorBrightness(uint monitorIndex, uint brightness);
+        ~DdcAdjuster() {
+            Dispose(disposing: false);
+        }
+
+        public void Dispose() {
+            Dispose(disposing: true);
+        }
+
+        private void Dispose(bool disposing) {
+            DdcDestroy(handle);
+            if (disposing) {
+                GC.SuppressFinalize(this);
+            }
+        }
 
         public int GetNumberOfMonitors() {
-            if (!GetNumberOfPhysicalMonitors(out uint numberOfPhysicalMonitors)) {
+            if (!DdcGetAvailableCount(handle, out uint count)) {
                 throw new Win32Exception();
             }
-            return (int) numberOfPhysicalMonitors;
+            return (int) count;
         }
 
         public int GetBrightnessPercentage(int monitorIndex) {
             if (monitorIndex < 0) {
                 throw new ArgumentOutOfRangeException(nameof(monitorIndex));
             }
-            if (!GetPhysicalMonitorBrightness((uint) monitorIndex, out uint currentBrightness, out uint minimumBrightness, out uint maximumBrightness)) {
+            if (!DdcGetBrightness(handle, (uint) monitorIndex, out uint currentBrightness, out uint minimumBrightness, out uint maximumBrightness)) {
                 throw new Win32Exception();
             }
             // 计算当前亮度在亮度区间的百分比
@@ -40,14 +49,29 @@ namespace MonitorBrightnessAdjuster.Adjusters {
             if (brightness < 0 || brightness > 100) {
                 throw new ArgumentOutOfRangeException(nameof(brightness));
             }
-            if (!GetPhysicalMonitorBrightness((uint) monitorIndex, out _, out uint minimumBrightness, out uint maximumBrightness)) {
+            if (!DdcGetBrightness(handle, (uint) monitorIndex, out _, out uint minimumBrightness, out uint maximumBrightness)) {
                 throw new Win32Exception();
             }
             // 将亮度百分比在亮度区间做映射
             uint newBrightness = (uint) ((float) (maximumBrightness - minimumBrightness) * brightness / 100 + minimumBrightness);
-            if (!SetPhysicalMonitorBrightness((uint) monitorIndex, newBrightness)) {
+            if (!DdcSetBrightness(handle, (uint) monitorIndex, newBrightness)) {
                 throw new Win32Exception();
             }
         }
+
+        [DllImport("LibDisplayDataChannel.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern UIntPtr DdcInitialize();
+
+        [DllImport("LibDisplayDataChannel.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void DdcDestroy(UIntPtr handle);
+
+        [DllImport("LibDisplayDataChannel.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern bool DdcGetAvailableCount(UIntPtr handle, out uint count);
+
+        [DllImport("LibDisplayDataChannel.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern bool DdcGetBrightness(UIntPtr handle, uint monitorIndex, out uint currentBrightness, out uint minimumBrightness, out uint maximumBrightness);
+
+        [DllImport("LibDisplayDataChannel.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern bool DdcSetBrightness(UIntPtr handle, uint monitorIndex, uint brightness);
     }
 }

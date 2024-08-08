@@ -1,147 +1,126 @@
 ﻿#include "Framework.h"
 #include "LibDisplayDataChannel.h"
 
-typedef enum MonitorEnumProcPurposeEnum {
-    MonitorEnumProcCount,
-    MonitorEnumProcGet,
-    MonitorEnumProcSet
-} MonitorEnumProcPurpose, * PMonitorEnumProcPurpose;
-
 typedef struct MonitorEnumProcParamStruct {
-    MonitorEnumProcPurpose purpose;
-    DWORD monitorIndex;
-    DWORD currentBrightness;
-    DWORD minimumBrightness;
-    DWORD maximumBrightness;
-    DWORD physicalMonitorCount;
-    BOOL result;
-} MonitorEnumProcParam, * PMonitorEnumProcParam;
+    BOOL countOnly;
+    DWORD monitorCount;
+    DWORD availableMonitorCount;
+    LPHANDLE availablePhysicalMonitorHandles;
+    LPPHYSICAL_MONITOR physicalMonitors;
+} MonitorEnumProcParam, *PMonitorEnumProcParam;
 
 static BOOL CALLBACK MonitorEnumProc(HMONITOR monitor, HDC dc, LPRECT rect, LPARAM data) {
     MonitorEnumProcParam* param = (MonitorEnumProcParam*) data;
-    BOOL success;
-
+    // 当前监视器数量
+    DWORD monitorCount = 0;
     // 统计每个监视器句柄对应的多个物理监视器数量
-    DWORD monitorCount;
     if (!GetNumberOfPhysicalMonitorsFromHMONITOR(monitor, &monitorCount)) {
         return FALSE;
     }
-
+    param->monitorCount += monitorCount;
+    // 仅计数则直接返回
+    if (param->countOnly) {
+        return TRUE;
+    }
+    // 当前监视器数组位置
+    LPPHYSICAL_MONITOR currentPhysicalMonitors = &param->physicalMonitors[param->monitorCount - monitorCount];
     // 获取对应的物理监视器句柄
-    HANDLE processHeap = GetProcessHeap();
-    LPPHYSICAL_MONITOR physicalMonitors = HeapAlloc(processHeap, 0, monitorCount * sizeof(PHYSICAL_MONITOR));
-    if (!physicalMonitors) {
+    if (!GetPhysicalMonitorsFromHMONITOR(monitor, monitorCount, currentPhysicalMonitors)) {
         return FALSE;
     }
-    success = GetPhysicalMonitorsFromHMONITOR(monitor, monitorCount, physicalMonitors);
-    if (!success) {
-        goto free;
-    }
-
-    // 计数: 统计支持调节亮度的监视器数量
-    //for (DWORD i = 0; i < monitorCount; i++) {
-    //    DWORD monitorCapabilities;
-    //    DWORD supportedColorTemperatures;
-    //    if (GetMonitorCapabilities(physicalMonitors[i].hPhysicalMonitor,
-    //                               &monitorCapabilities,
-    //                               &supportedColorTemperatures) &&
-    //        monitorCapabilities & MC_CAPS_BRIGHTNESS) {
-    //        param->physicalMonitorCount++;
-    //    }
-    //}
-
-    // 计数: 统计支持调节亮度的监视器数量
+    // 统计支持亮度调节的监视器
     for (DWORD i = 0; i < monitorCount; i++) {
         DWORD currentBrightness;
         DWORD minimumBrightness;
         DWORD maximumBrightness;
-        if (GetMonitorBrightness(physicalMonitors[i].hPhysicalMonitor,
+        if (GetMonitorBrightness(currentPhysicalMonitors[i].hPhysicalMonitor,
                                  &minimumBrightness,
                                  &currentBrightness,
                                  &maximumBrightness)) {
-            param->physicalMonitorCount++;
+            // 记录支持亮度调节的监视器句柄
+            param->availablePhysicalMonitorHandles[param->availableMonitorCount++] = currentPhysicalMonitors[i].hPhysicalMonitor;
         }
     }
-
-    // 计数: 不统计直接计数
-    //param->physicalMonitorCount += monitorCount;
-
-    // 目的是计数则到此结束
-    if (param->purpose == MonitorEnumProcCount) {
-        param->result = success; // 当前循环计数完成
-        goto closeAndFree;
-    }
-
-    // 目的是获取或设置
-    if (param->purpose != MonitorEnumProcGet && param->purpose != MonitorEnumProcSet) {
-        goto closeAndFree;
-    }
-    if (param->physicalMonitorCount > param->monitorIndex) {
-        // 根据铺平后的索引获取对应的物理监视器句柄
-        HANDLE physicalMonitor = physicalMonitors[param->monitorIndex - param->physicalMonitorCount + monitorCount].hPhysicalMonitor;
-        if (param->purpose == MonitorEnumProcGet) {
-            success = GetMonitorBrightness(physicalMonitor,
-                                           &param->minimumBrightness,
-                                           &param->currentBrightness,
-                                           &param->maximumBrightness);
-        } else {
-            success = SetMonitorBrightness(physicalMonitor,
-                                           param->currentBrightness);
-        }
-        param->result = success; // 设置完成标志
-        success = FALSE; // 设置后结束循环
-    }
-
-    // 关闭物理监视器句柄
-closeAndFree:
-    DestroyPhysicalMonitors(monitorCount, physicalMonitors);
-    // 释放堆内存
-free:
-    HeapFree(processHeap, 0, physicalMonitors);
-    return success;
+    return TRUE;
 }
 
-bool GetNumberOfPhysicalMonitors(uint32_t* numberOfPhysicalMonitors) {
-    MonitorEnumProcParam param = {
-        .purpose = MonitorEnumProcCount
-    };
-    if (!EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM) &param) && !param.result) {
+void* DdcInitialize() {
+    HANDLE processHeap = GetProcessHeap();
+    // 初始化变量
+    PMonitorEnumProcParam param = (PMonitorEnumProcParam) HeapAlloc(processHeap, HEAP_ZERO_MEMORY, sizeof(MonitorEnumProcParam));
+    if (!param) {
+        DdcDestroy(param);
+        return NULL;
+    }
+    // 首次遍历获取监视器数量
+    param->countOnly = TRUE;
+    if (!EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM) param)) {
+        DdcDestroy(param);
+        return NULL;
+    }
+    // 初始化监视器数组和可用标记数组
+    param->physicalMonitors = (LPPHYSICAL_MONITOR) HeapAlloc(processHeap, 0, param->monitorCount * sizeof(PHYSICAL_MONITOR));
+    param->availablePhysicalMonitorHandles = (LPHANDLE) HeapAlloc(processHeap, 0, param->monitorCount * sizeof(HANDLE));
+    param->countOnly = FALSE;
+    param->monitorCount = 0;
+    param->availableMonitorCount = 0;
+    if (!param->physicalMonitors || !param->availablePhysicalMonitorHandles) {
+        DdcDestroy(param);
+        return NULL;
+    }
+    // 获取所有监视器以及是否可用的状态
+    if (!EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM) param)) {
+        DdcDestroy(param);
+        return NULL;
+    }
+    return param;
+}
+
+void DdcDestroy(void* handle) {
+    if (!handle) {
+        return;
+    }
+    HANDLE processHeap = GetProcessHeap();
+    PMonitorEnumProcParam param = (PMonitorEnumProcParam) handle;
+    DestroyPhysicalMonitors(param->monitorCount, param->physicalMonitors);
+    HeapFree(processHeap, 0, param->physicalMonitors);
+    HeapFree(processHeap, 0, param->availablePhysicalMonitorHandles);
+    HeapFree(processHeap, 0, param);
+}
+
+bool DdcGetAvailableCount(void* handle, uint32_t* count) {
+    if (!handle || !count) {
         return false;
     }
-    *numberOfPhysicalMonitors = param.physicalMonitorCount;
+    PMonitorEnumProcParam param = (PMonitorEnumProcParam) handle;
+    *count = param->availableMonitorCount;
     return true;
 }
 
-bool GetPhysicalMonitorBrightness(uint32_t monitorIndex,
-                                  uint32_t* currentBrightness,
-                                  uint32_t* minimumBrightness,
-                                  uint32_t* maximumBrightness) {
-    MonitorEnumProcParam param = {
-        .purpose = MonitorEnumProcGet,
-        .monitorIndex = monitorIndex
-    };
-    if (!EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM) &param) && !param.result) {
+bool DdcGetBrightness(void* handle,
+                      uint32_t monitorIndex,
+                      uint32_t* currentBrightness,
+                      uint32_t* minimumBrightness,
+                      uint32_t* maximumBrightness) {
+    if (!handle || !currentBrightness || !minimumBrightness || !maximumBrightness) {
         return false;
     }
-    if (param.currentBrightness == 0 &&
-        param.minimumBrightness == 0 &&
-        param.maximumBrightness == 0) {
+    PMonitorEnumProcParam param = (PMonitorEnumProcParam) handle;
+    if (monitorIndex >= param->availableMonitorCount) {
         return false;
     }
-    *currentBrightness = param.currentBrightness;
-    *minimumBrightness = param.minimumBrightness;
-    *maximumBrightness = param.maximumBrightness;
-    return true;
+    HANDLE physicalMonitorHandle = param->availablePhysicalMonitorHandles[monitorIndex];
+    return GetMonitorBrightness(physicalMonitorHandle, minimumBrightness, currentBrightness, maximumBrightness);
 }
 
-bool SetPhysicalMonitorBrightness(uint32_t monitorIndex, uint32_t brightness) {
-    MonitorEnumProcParam param = {
-        .purpose = MonitorEnumProcSet,
-        .monitorIndex = monitorIndex,
-        .currentBrightness = brightness
-    };
-    if (!EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM) &param) && !param.result) {
+bool DdcSetBrightness(void* handle, uint32_t monitorIndex, uint32_t brightness) {
+    if (!handle) {
         return false;
     }
-    return true;
+    PMonitorEnumProcParam param = (PMonitorEnumProcParam) handle;
+    if (monitorIndex >= param->availableMonitorCount) {
+        return false;
+    }
+    HANDLE physicalMonitorHandle = param->availablePhysicalMonitorHandles[monitorIndex];
+    return SetMonitorBrightness(physicalMonitorHandle, brightness);
 }
