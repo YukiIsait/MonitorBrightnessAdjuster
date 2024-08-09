@@ -10,11 +10,6 @@
     <AssemblyVersion>1.4.0.0</AssemblyVersion>
     <FileVersion>1.4.0.0</FileVersion>
     <Description>A utility application designed to help you control the brightness of your monitors.
-屏幕亮度调节器是一款用来帮助您控制显示器屏幕亮度的小巧程序。
-
-May everyone live freely under the sun, and may my encouragement turn into courage to accompany you.
-愿每一个人都能够自由的生活在阳光下，愿我的鼓励化作勇气伴你身旁。
-
 https://github.com/YukiIsait/MonitorBrightnessAdjuster</Description>
     <Copyright>Copyright © 2024 YukiIsait</Copyright>
     <Product>Monitor Brightness Adjuster</Product>
