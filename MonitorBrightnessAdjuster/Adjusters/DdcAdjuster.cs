@@ -61,18 +61,18 @@ namespace MonitorBrightnessAdjuster.Adjusters {
         }
 
         [DllImport("LibDisplayDataChannel.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern UIntPtr DdcInitialize();
+        private static extern UIntPtr DdcInitialize();
 
         [DllImport("LibDisplayDataChannel.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void DdcDestroy(UIntPtr handle);
+        private static extern void DdcDestroy(UIntPtr handle);
 
         [DllImport("LibDisplayDataChannel.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern bool DdcGetAvailableCount(UIntPtr handle, out uint count);
+        private static extern bool DdcGetAvailableCount(UIntPtr handle, out uint count);
 
         [DllImport("LibDisplayDataChannel.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern bool DdcGetBrightness(UIntPtr handle, uint monitorIndex, out uint currentBrightness, out uint minimumBrightness, out uint maximumBrightness);
+        private static extern bool DdcGetBrightness(UIntPtr handle, uint monitorIndex, out uint currentBrightness, out uint minimumBrightness, out uint maximumBrightness);
 
         [DllImport("LibDisplayDataChannel.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern bool DdcSetBrightness(UIntPtr handle, uint monitorIndex, uint brightness);
+        private static extern bool DdcSetBrightness(UIntPtr handle, uint monitorIndex, uint brightness);
     }
 }
