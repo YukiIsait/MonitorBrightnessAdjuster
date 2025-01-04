@@ -3,24 +3,25 @@ using System.Runtime.InteropServices;
 
 namespace MonitorBrightnessAdjuster.Adjusters {
     public sealed class DdcAdjuster: IAdjuster, IDisposable {
-        private readonly UIntPtr handle;
+        private UIntPtr handle;
 
         public DdcAdjuster() {
             handle = DdcInitialize();
         }
 
         ~DdcAdjuster() {
-            Dispose(disposing: false);
+            Destroy();
         }
 
         public void Dispose() {
-            Dispose(disposing: true);
+            Destroy();
+            GC.SuppressFinalize(this);
         }
 
-        private void Dispose(bool disposing) {
-            DdcDestroy(handle);
-            if (disposing) {
-                GC.SuppressFinalize(this);
+        private void Destroy() {
+            if (handle != UIntPtr.Zero) {
+                DdcDestroy(handle);
+                handle = UIntPtr.Zero;
             }
         }
 
