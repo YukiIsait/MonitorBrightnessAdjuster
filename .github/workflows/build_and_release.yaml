@@ -1,0 +1,41 @@
+name: Build And Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build_and_release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        id: cache
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+      
+      - name: Build
+        run: msbuild -m -t:Restore,Build -p:Configuration=Release -p:Platform=x64 -p:RestoreLockedMode=true
+
+      - name: Package
+        working-directory: MonitorBrightnessAdjuster/bin/Release/net472
+        run: Get-ChildItem | Compress-Archive -CompressionLevel Optimal -DestinationPath MonitorBrightnessAdjuster.zip
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          fail_on_unmatched_files: true
+          files: MonitorBrightnessAdjuster/bin/Release/net472/MonitorBrightnessAdjuster.zip
