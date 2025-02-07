@@ -7,6 +7,9 @@ namespace MonitorBrightnessAdjuster.Adjusters {
 
         public DdcAdjuster() {
             handle = DdcInitialize();
+            if (handle == UIntPtr.Zero) {
+                throw new Win32Exception();
+            }
         }
 
         ~DdcAdjuster() {
